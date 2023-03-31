@@ -55,22 +55,6 @@ gate_Gamma_a = 400*wn_eV  # in eV
 
 ## parameters in eV unit ##
 
-"""
-gate_epsilon = 0.31
-gate_D = gate_A = 0
-gate_V_M = gate_V_D = gate_V_A = 0.035
-## -------------------------------------------- ##
-## checking effect of V_D(V_A)/V_M for figure 5 ##
-## -------------------------------------------- ##
-gate_V_M_arr = [0.03, 0.06, 0.1]
-gate_V_A_M_ratio = [0.1+j*0.1 for j in range(10)]
-gate_V_A_arr = []
-for elem in gate_V_M_arr:
-    pp = []
-    for i in range(len(gate_V_A_M_ratio)):
-        pp.append(gate_V_A_M_ratio[i]*elem)
-    gate_V_A_arr.append(pp)
-
 
 ## ------------------------------- ##
 ## ------------------------------- ##
@@ -92,21 +76,10 @@ gate_Vg_arr = [-0.15+j*0.01 for j in range(31)]
 gate_sd_status = "on"  # source-drain status
 gate_voltage_status = "on"  # gate voltage status
 gate_J = 200*wn_eV  # J is chosen as 200 cm**-1
-"""
 
 ######################################
 ######################################
 
-
-# routine for eigenvector sorting according to eigenvalues
-
-def eigvec_sorter(X, A):
-    argsort = np.argsort(X).tolist()
-    A_T = np.transpose(A).tolist()
-    eigvec_rtrn = []
-    for i in range(len(argsort)):
-        eigvec_rtrn.append(A_T[argsort[i]])
-    return eigvec_rtrn
 
 
 #######################################################
