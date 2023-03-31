@@ -8,12 +8,10 @@ import matplotlib.pyplot as plt
 
 
 #######################################
-## *** Parameters for LYH paper *** ##
-## all parameters start with gate ##
+# all parameters 
 #######################################
 
 # N_site_fig5 = 8  # No of bridge site when to run just for a single N
-# N_bridge = [10]  # no of bridge sites
 N_bridge = np.arange(1, 11)  # Bridge sites to consider
 #N_bridge_fig4 = [3, 4, 5, 6, 7]
 #N_bridge_fig6 = [ 6,7,8]
@@ -52,34 +50,6 @@ gate_voltage_status = "on"  # gate-voltage staus
 gate_J = 200*wn_eV  # J is chosen as 200 cm**-1 in eV unit
 # gate_Gamma_a = 400*wn_J ## in J
 gate_Gamma_a = 400*wn_eV  # in eV
-
-## parameters in eV unit ##
-
-
-## ------------------------------- ##
-## ------------------------------- ##
-gate_Gamma_a = 0.05
-gate_T = 300
-gate_T_inv = [3.1+0.01*j for j in range(51)]
-gate_T_arr = [1000/elem for elem in gate_T_inv]
-
-gate_T_inv_fit = [1/elem for elem in gate_T_arr]
-
-gate_kappa = 0.01
-gate_tau_c_inv = 0.0744
-gate_sd = 0.05
-# array for checking source-drain voltage variation for a given gate voltage
-gate_sd_arr = [0.+j*0.008 for j in range(26)]
-gate_Vg = [0.]
-# array for checking effect of variation of gate voltage
-gate_Vg_arr = [-0.15+j*0.01 for j in range(31)]
-gate_sd_status = "on"  # source-drain status
-gate_voltage_status = "on"  # gate voltage status
-gate_J = 200*wn_eV  # J is chosen as 200 cm**-1
-
-######################################
-######################################
-
 
 
 #######################################################
@@ -546,124 +516,5 @@ for i in range(len(N_bridge)):
     slope = -linregress(gate_T_inv_fit, kss_arr)[0]
     print("{:d}	{:20.12e}".format(N_bridge[i], slope*k_B_eV))
 """
-sys.exit()
-
-fig = plt.figure()
-ax = plt.axes()
-plt.plot(gate_T_inv, conductance, marker='o')
-plt.ylim(1e-11, 1e-05)
-plt.yscale('log')
-ax.set_yticks([1e-11, 1e-09, 1e-07, 1e-05])
-plt.show()
-sys.exit()
-
-#conductance_log = [math.log(conductance[i]) for i in range(len(conductance))]
-
-# np.savetxt("./data_gate_fig3/GQ_N" +
-#           str(N_bridge[0])+".dat", conductance, fmt='%20.12e')
-
-sys.exit()
 
 
-## activation energy calculation using linear regression ##
-
-x = np.array(gate_T_inv).reshape(len(gate_T_inv), 1)
-y = np.array(conductance_log)
-
-model = LinearRegression()
-
-model.fit(x, y)
-
-coeff = model.coef_
-
-print(coeff)
-sys.exit()
-
-
-###################################################
-###################################################
-###################################################
-
-"""
-
-## calculation of the Redfield tensor ##
-
-# initialising the Redfield tensor as a matrix
-
-Cmat = np.zeros(((N_bridge+2)**2, (N_bridge+2)**2))
-
-R_tensor = np.zeros(((N_bridge+2)**2, (N_bridge+2)**2), dtype=complex)
-
-dmarr = [N_bridge+2, N_bridge+2]
-
-strideobj = INDEX_ONE_2_MULTIDIM_DPB_BACK_AND_FORTH(dmarr)
-
-BB_inv = LA.inv(BB)
-
-Rtensorobj = generate_R_tensor(
-    BB, BB_inv, k_B, N_bridge, gate_kappa_J, (1/gate_tau_c_inv_J), gate_T, AA)
-#Rtensorobj = generate_R_tensor(BB,BB_inv, k_B, N_bridge, gate_kappa_J, 0., gate_T,AA)
-
-
-for i in range(len(R_tensor)):
-    for j in range(len(R_tensor[i])):
-        id1, id2 = strideobj.one_dim_indices(
-            i+1)[0], strideobj.one_dim_indices(i+1)[1]
-        id3, id4 = strideobj.one_dim_indices(
-            j+1)[0], strideobj.one_dim_indices(j+1)[1]
-        Cmat[i][j] = Rtensorobj.eval_Cmat(id1, id2, id3, id4)
-        T1 = Rtensorobj.eval_trm1(id1, id2, id3, id4)
-        T2 = Rtensorobj.eval_trm2(id1, id2, id3, id4)
-        T3 = Rtensorobj.eval_trm3(id1, id2, id3, id4)
-        T4 = Rtensorobj.eval_trm4(id1, id2, id3, id4)
-        R_tensor[i][j] = -T1-T2+T3+T4
-
-
-Cmatnp1 = np.array(Cmat, dtype=complex)
-
-Cmatnp2 = -1j*Cmatnp1
-
-L = Cmatnp2 + R_tensor
-
-L1 = L/((h_J/(2*np.pi)))  # Liouvillian
-
-###################################################
-### calculation specific for Segal-Nitzan paper ###
-###################################################
-
-## Steady-state Boundary conditions ##
-
-J_vect = np.zeros([N_bridge+2, N_bridge+2])
-
-
-for elem in J_vect[:len(J_vect)-1]:
-    elem[-1] = 0.5*gate_Gamma_a
-
-for j in range(0, len(J_vect)-1):
-    J_vect[len(J_vect)-1][j] = 0.5*gate_Gamma_a
-
-J_vect[-1][-1] = gate_Gamma_a
-
-J_vect1 = J_vect.flatten()
-
-
-J_vect2 = np.diag(J_vect1)
-J_vect3 = J_vect2/(h_J/(2*np.pi))
-
-L1 += -J_vect3
-
-B = np.zeros((N_bridge+2)**2)
-B[0] = -gate_J
-
-rho_sys = LA.solve(L1, B)
-
-#rate_ss = gate_Gamma_a*(rho_sys[-1].real/rho_sys[0].real)*(2*(np.pi)/h_J)
-
-rate_ss = gate_J/(rho_sys[0].real)
-
-print("{:d}   {:20.12e}".format(N_bridge, rate_ss))
-#print("{:d}   {:6.2f}    {:20.12e}".format(N_bridge,(gate_kappa_J/gate_epsilon_J),rate_ss*(1e-04)))
-#print("{:d}   {:6.2f}    {:20.12e}".format(N_bridge,(1e+03/(gate_T)),rate_ss))
-
-
-"""
